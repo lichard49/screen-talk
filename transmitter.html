@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
+    <link rel="stylesheet" href="https://milligram.github.io/styles/main.css">
+  </head>
+
+  <body>
+    <main class="wrapper">
+      <nav class="navigation">
+        <section class="container">
+          <h1 class="title">Screen Talk ~ Transmitter</h1>
+        </section>
+      </nav>
+
+      <section class="container">
+        <canvas id="flicker-screen"/>
+      </section>
+    </main>
+
+    <script type="text/javascript">
+      function drawBackground() {
+        const flicker = document.getElementById('flicker-screen');
+        flicker.width = bg.width;
+        flicker.height = bg.height;
+
+        var ctx = flicker.getContext('2d');
+        ctx.drawImage(bg, 0, 0);
+      }
+
+      const bg = new Image();
+      bg.onload = drawBackground;
+      bg.src = 'img/bg.jpg';
+    </script>
+  </body>  
+</html>
