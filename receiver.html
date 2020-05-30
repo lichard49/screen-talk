@@ -15,10 +15,54 @@
       </nav>
 
       <section class="container">
+        <video id="camera" style="display: none;" autoplay playsinline></video>
+        <button id="start-camera">Start camera</button>
+        <canvas id="blob"/>
       </section>
     </main>
 
     <script type="text/javascript">
     </script>
-  </body>  
+  </body>
+
+  <script type="text/javascript">
+    const video = document.getElementById('camera');
+    const button = document.getElementById('start-camera');
+
+    button.addEventListener('click', event => {
+      const videoConstraints = {};
+      const constraints = {
+        video: videoConstraints,
+        audio: false
+      };
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(stream => {
+          currentStream = stream;
+          video.srcObject = stream;
+
+          setupVideo();
+
+          return navigator.mediaDevices.enumerateDevices();
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    });
+
+    const canvas = document.getElementById('blob');
+
+    function setupVideo() {
+      setInterval(drawFrame, 10);
+    }
+
+    function drawFrame() {
+      if (canvas.width != video.videoWidth) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+
+      canvas.getContext('2d').drawImage(video, 0, 0);
+    }
+  </script>
 </html>
