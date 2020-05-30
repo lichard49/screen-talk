@@ -20,17 +20,22 @@
     </main>
 
     <script type="text/javascript">
-      function drawBackground() {
-        const flicker = document.getElementById('flicker-screen');
+      const flicker = document.getElementById('flicker-screen');
+      const ctx = flicker.getContext('2d');
+
+      function setupCanvas() {
         flicker.width = bg.width;
         flicker.height = bg.height;
 
-        var ctx = flicker.getContext('2d');
+        drawBackground();
+      }
+
+      function drawBackground() {
         ctx.drawImage(bg, 0, 0);
       }
 
       const bg = new Image();
-      bg.onload = drawBackground;
+      bg.onload = setupCanvas;
       bg.src = 'img/bg.jpg';
     </script>
   </body>  
