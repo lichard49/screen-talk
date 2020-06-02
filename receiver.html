@@ -108,6 +108,20 @@
           fft_ctx.lineWidth = 1;
           fft_ctx.stroke();
 
+          fft_ctx.beginPath();
+          fft_ctx.lineTo(5 * 8, 0);
+          fft_ctx.lineTo(5 * 8, fft_canvas.height);
+          fft_ctx.strokeStyle = '#FF0000';
+          fft_ctx.lineWidth = 1;
+          fft_ctx.stroke();
+
+          fft_ctx.beginPath();
+          fft_ctx.lineTo(10 * 8, 0);
+          fft_ctx.lineTo(10 * 8, fft_canvas.height);
+          fft_ctx.strokeStyle = '#FF0000';
+          fft_ctx.lineWidth = 1;
+          fft_ctx.stroke();
+
           // slide window
           for (var i = fft_size/2-1; i >= 0; i--) {
             buffer.shift();
