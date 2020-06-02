@@ -1,9 +1,13 @@
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
     <link rel="stylesheet" href="https://milligram.github.io/styles/main.css">
+
+    <script src="js/fft.js"></script>
   </head>
 
   <body>
@@ -17,52 +21,99 @@
       <section class="container">
         <video id="camera" style="display: none;" autoplay playsinline></video>
         <button id="start-camera">Start camera</button>
-        <canvas id="blob"/>
+        <p id="output">Output</p>
+        <canvas id="camera-canvas"></canvas>
+        <canvas id="fft-canvas"></canvas>
       </section>
     </main>
 
     <script type="text/javascript">
-    </script>
-  </body>
+      const video = document.getElementById('camera');
+      const button = document.getElementById('start-camera');
 
-  <script type="text/javascript">
-    const video = document.getElementById('camera');
-    const button = document.getElementById('start-camera');
+      button.addEventListener('click', event => {
+        const videoConstraints = {
+          facingMode: 'environment',
+          franeRate: {
+            exact: 60
+          },
+          width: 160,
+          height: 120
+        };
+        const constraints = {
+          video: videoConstraints,
+          audio: false
+        };
+        navigator.mediaDevices
+          .getUserMedia(constraints)
+          .then(stream => {
+            currentStream = stream;
+            video.srcObject = stream;
 
-    button.addEventListener('click', event => {
-      const videoConstraints = {};
-      const constraints = {
-        video: videoConstraints,
-        audio: false
-      };
-      navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then(stream => {
-          currentStream = stream;
-          video.srcObject = stream;
+            setupVideo();
 
-          setupVideo();
+            return navigator.mediaDevices.enumerateDevices();
+          })
+          .catch(error => {
+            console.error(error);
+          });
+      });
 
-          return navigator.mediaDevices.enumerateDevices();
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    });
-
-    const canvas = document.getElementById('blob');
-
-    function setupVideo() {
-      setInterval(drawFrame, 10);
-    }
-
-    function drawFrame() {
-      if (canvas.width != video.videoWidth) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+      function setupVideo() {
+        setInterval(drawFrame, 10);
       }
 
-      canvas.getContext('2d').drawImage(video, 0, 0);
-    }
-  </script>
+      const camera_canvas = document.getElementById('camera-canvas');
+      const camera_ctx = camera_canvas.getContext('2d');
+      const fft_canvas = document.getElementById('fft-canvas');
+      const fft_ctx = fft_canvas.getContext('2d');
+      // move the origin to the bottom left corner
+      fft_ctx.translate(0, fft_canvas.height);
+      fft_ctx.scale(1, -1);
+      const output = document.getElementById('output');
+      const buffer = [];
+      const fft_size = 32;
+
+      function drawFrame() {
+        if (camera_canvas.width != video.videoWidth) {
+          camera_canvas.width = video.videoWidth;
+          camera_canvas.height = video.videoHeight;
+        }
+
+        camera_ctx.drawImage(video, 0, 0);
+        camera_ctx.beginPath();
+        camera_ctx.arc(camera_canvas.width/2, camera_canvas.height/2, 5, 0, 2 * Math.PI);
+        camera_ctx.strokeStyle = '#FF0000';
+        camera_ctx.lineWidth = 2;
+        camera_ctx.stroke();
+
+        let frame = camera_ctx
+          .getImageData(camera_canvas.width/2-1, camera_canvas.height/2, 1, 1).data;
+
+        buffer.push(frame[0]);
+
+        if (buffer.length >= fft_size) {
+          var real = jsFFT.populateFullReal(fft_size, buffer);
+          var imag = jsFFT.makeComplex(real, fft_size);
+          var freq = jsFFT.FFT(imag, fft_size, 1);
+          var mag = jsFFT.Magnitude(freq, fft_size);
+          output.innerHTML = mag;
+
+          fft_ctx.clearRect(0, 0, mag.length*8, fft_canvas.height);
+          fft_ctx.beginPath();
+          for (var i = mag.length - 1; i >= 0; i--) {
+            fft_ctx.lineTo(i*8, mag[i]);
+          }
+          fft_ctx.strokeStyle = '#000000';
+          fft_ctx.lineWidth = 1;
+          fft_ctx.stroke();
+
+          // slide window
+          for (var i = fft_size/2-1; i >= 0; i--) {
+            buffer.shift();
+          }
+        }
+      }
+    </script>
+  </body>
 </html>
