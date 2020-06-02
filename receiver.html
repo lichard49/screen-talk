@@ -72,7 +72,7 @@
       fft_ctx.scale(1, -1);
       const output = document.getElementById('output');
       const buffer = [];
-      const fft_size = 32;
+      const fft_size = 64;
 
       function drawFrame() {
         if (camera_canvas.width != video.videoWidth) {
@@ -102,7 +102,7 @@
           fft_ctx.clearRect(0, 0, mag.length*8, fft_canvas.height);
           fft_ctx.beginPath();
           for (var i = mag.length - 1; i >= 0; i--) {
-            fft_ctx.lineTo(i*8, mag[i]);
+            fft_ctx.lineTo(i*8, mag[i]/20);
           }
           fft_ctx.strokeStyle = '#000000';
           fft_ctx.lineWidth = 1;
