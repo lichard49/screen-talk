@@ -1,5 +1,7 @@
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
@@ -17,19 +19,41 @@
       </nav>
 
       <section class="container">
-        <canvas id="flicker-screen"/>
+        <canvas id="flicker-screen"></canvas>
+        <button onclick="startSequence();">Go</button>
       </section>
     </main>
 
     <script type="text/javascript">
       const canvas = document.getElementById('flicker-screen');
+      let flicker = null;
 
       function setupCanvas() {
         canvas.width = bg.width;
         canvas.height = bg.height;
 
-        const flicker = new Flicker(canvas, bg, 0.03);
-        flicker.startFlicker(60);
+        flicker = new Flicker(canvas, bg, 0.5);
+      }
+
+      const sequence = [30]; //, 30, 15, 30, 15, 30];
+      let sequence_index = 0;
+      let sequence_callback = -1;
+
+      function startSequence() {
+        sequence_callback = setInterval(runFlicker, 5000);
+        console.log(sequence_callback);
+      }
+
+      function runFlicker() {
+        flicker.stopFlicker();
+
+        if (sequence_index >= sequence.length) {
+          clearInterval(sequence_callback);
+          sequence_index = 0;
+        } else {
+          flicker.startFlicker(sequence[sequence_index]);
+          sequence_index++;
+        }
       }
 
       const bg = new Image();

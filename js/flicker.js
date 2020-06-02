@@ -18,7 +18,9 @@ class Flicker {
   stopFlicker() {
     this.fill_state = false;
     this.refreshScreen();
-    this.animate.stop();
+    if (this.animate != null) {
+      this.animate.stop();
+    }
   }
 
   refreshScreen() {
