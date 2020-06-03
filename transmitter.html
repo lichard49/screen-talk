@@ -31,6 +31,7 @@
       function setupCanvas() {
         canvas.width = bg.width;
         canvas.height = bg.height;
+        canvas.getContext('2d').drawImage(bg, 0, 0);
 
         flicker = new Flicker(canvas, bg, 0.5);
       }
@@ -40,6 +41,7 @@
       let sequence_callback = -1;
 
       function startSequence() {
+        runFlicker();
         sequence_callback = setInterval(runFlicker, 5000);
         console.log(sequence_callback);
       }
