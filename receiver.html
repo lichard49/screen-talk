@@ -63,16 +63,21 @@
         setInterval(drawFrame, 10);
       }
 
+      // output canvas and context
       const camera_canvas = document.getElementById('camera-canvas');
       const camera_ctx = camera_canvas.getContext('2d');
       const fft_canvas = document.getElementById('fft-canvas');
       const fft_ctx = fft_canvas.getContext('2d');
-      // move the origin to the bottom left corner
-      fft_ctx.translate(0, fft_canvas.height);
-      fft_ctx.scale(1, -1);
+      fft_ctx.translate(0, fft_canvas.height);   // move the origin
+      fft_ctx.scale(1, -1);            // to the bottom left corner
       const output = document.getElementById('output');
+
+      // FFT configuration
       const buffer = [];
       const fft_size = 64;
+      const fft_scale = 8;
+      const fft_low_bin = 5;
+      const fft_high_bin = 10;
 
       function drawFrame() {
         if (camera_canvas.width != video.videoWidth) {
@@ -80,53 +85,71 @@
           camera_canvas.height = video.videoHeight;
         }
 
-        camera_ctx.drawImage(video, 0, 0);
-        camera_ctx.beginPath();
-        camera_ctx.arc(camera_canvas.width/2, camera_canvas.height/2, 5, 0, 2 * Math.PI);
-        camera_ctx.strokeStyle = '#FF0000';
-        camera_ctx.lineWidth = 2;
-        camera_ctx.stroke();
-
-        let frame = camera_ctx
-          .getImageData(camera_canvas.width/2-1, camera_canvas.height/2, 1, 1).data;
-
+        drawCamera(camera_ctx, camera_canvas, video);
+        let frame = getCameraROI(camera_ctx);
         buffer.push(frame[0]);
 
         if (buffer.length >= fft_size) {
-          var real = jsFFT.populateFullReal(fft_size, buffer);
-          var imag = jsFFT.makeComplex(real, fft_size);
-          var freq = jsFFT.FFT(imag, fft_size, 1);
-          var mag = jsFFT.Magnitude(freq, fft_size);
-          output.innerHTML = mag;
+          // calculate FFT and show raw values
+          let fft_mag = getFFT(buffer);
+          output.innerHTML = fft_mag;
 
-          fft_ctx.clearRect(0, 0, mag.length*8, fft_canvas.height);
-          fft_ctx.beginPath();
-          for (var i = mag.length - 1; i >= 0; i--) {
-            fft_ctx.lineTo(i*8, mag[i]/20);
-          }
-          fft_ctx.strokeStyle = '#000000';
-          fft_ctx.lineWidth = 1;
-          fft_ctx.stroke();
+          // draw FFT and markers
+          drawFrame(fft_ctx, fft_canvas, fft_mag);
 
-          fft_ctx.beginPath();
-          fft_ctx.lineTo(5 * 8, 0);
-          fft_ctx.lineTo(5 * 8, fft_canvas.height);
-          fft_ctx.strokeStyle = '#FF0000';
-          fft_ctx.lineWidth = 1;
-          fft_ctx.stroke();
-
-          fft_ctx.beginPath();
-          fft_ctx.lineTo(10 * 8, 0);
-          fft_ctx.lineTo(10 * 8, fft_canvas.height);
-          fft_ctx.strokeStyle = '#FF0000';
-          fft_ctx.lineWidth = 1;
-          fft_ctx.stroke();
+          drawLine(fft_ctx, fft_low_bin * fft_scale, 0,
+            fft_low_bin * fft_scale, fft_canvas.height);
+          drawLine(fft_ctx, fft_high_bin * fft_scale, 0,
+            fft_high_bin * fft_scale, fft_canvas.height);
 
           // slide window
-          for (var i = fft_size/2-1; i >= 0; i--) {
+          for (let i = fft_size/2-1; i >= 0; i--) {
             buffer.shift();
           }
         }
+      }
+
+      function drawCamera(context, canvas, frame) {
+        context.drawImage(frame, 0, 0);
+        context.beginPath();
+        context.arc(canvas.width/2, canvas.height/2, 5, 0, 2 * Math.PI);
+        context.strokeStyle = '#FF0000';
+        context.lineWidth = 2;
+        context.stroke();
+      }
+
+      function getCameraROI(context) {
+        return context.getImageData(camera_canvas.width/2-1,
+          camera_canvas.height/2, 1, 1).data;
+      }
+
+      function getFFT(signal) {
+        let real = jsFFT.populateFullReal(fft_size, signal);
+        let imag = jsFFT.makeComplex(real, fft_size);
+        let freq = jsFFT.FFT(imag, fft_size, 1);
+        let mag = jsFFT.Magnitude(freq, fft_size);
+
+        return mag;
+      }
+
+      function drawFFT(context, canvas, fft) {
+        context.clearRect(0, 0, fft.length*8, canvas.height);
+        context.beginPath();
+        for (let i = fft.length - 1; i >= 0; i--) {
+          context.lineTo(i*8, fft[i]/20);
+        }
+        context.strokeStyle = '#000000';
+        context.lineWidth = 1;
+        context.stroke();
+      }
+
+      function drawLine(context, x0, y0, x1, y1) {
+        context.beginPath();
+        context.lineTo(5 * 8, 0);
+        context.lineTo(5 * 8, fft_canvas.height);
+        context.strokeStyle = '#FF0000';
+        context.lineWidth = 1;
+        context.stroke();
       }
     </script>
   </body>
