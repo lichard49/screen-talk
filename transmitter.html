@@ -20,13 +20,17 @@
 
       <section class="container">
         <canvas id="flicker-screen"></canvas>
-        <button onclick="startSequence();">Go</button>
+        <button onclick="startSequence();">Sequence</button>
+        <p id="sequence-output"></p>
+        <button onclick="startLowFrequency();">Low</button>
+        <button onclick="startHighFrequency();">High</button>
       </section>
     </main>
 
     <script type="text/javascript">
       const canvas = document.getElementById('flicker-screen');
       let flicker = null;
+      const sequence_output = document.getElementById('sequence-output');
 
       function setupCanvas() {
         canvas.width = bg.width;
@@ -36,26 +40,38 @@
         flicker = new Flicker(canvas, bg, 0.5);
       }
 
-      const sequence = [30]; //, 30, 15, 30, 15, 30];
+      const sequence = [15, 30, 15, 30, 15, 30];
       let sequence_index = 0;
       let sequence_callback = -1;
 
       function startSequence() {
         runFlicker();
         sequence_callback = setInterval(runFlicker, 5000);
-        console.log(sequence_callback);
       }
 
       function runFlicker() {
         flicker.stopFlicker();
 
+        sequence_output.innerHTML = (sequence_index + 1) + ' / ' + sequence.length;
+
         if (sequence_index >= sequence.length) {
           clearInterval(sequence_callback);
           sequence_index = 0;
+          sequence_output.innerHTML = '';
         } else {
           flicker.startFlicker(sequence[sequence_index]);
           sequence_index++;
         }
+      }
+
+      function startLowFrequency() {
+        flicker.stopFlicker();
+        flicker.startFlicker(15);
+      }
+
+      function startHighFrequency() {
+        flicker.stopFlicker();
+        flicker.startFlicker(30);
       }
 
       const bg = new Image();
