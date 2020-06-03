@@ -24,6 +24,7 @@
         <p id="sequence-output"></p>
         <button onclick="startLowFrequency();">Low</button>
         <button onclick="startHighFrequency();">High</button>
+        <button onclick="stop();">Stop</button>
       </section>
     </main>
 
@@ -40,16 +41,20 @@
         flicker = new Flicker(canvas, bg, 0.5);
       }
 
-      const sequence = [15, 30, 15, 30, 15, 30];
+      const sequence = [15, 30, 15, 30, 15, 30, 15, 30, 15, 30];
       let sequence_index = 0;
       let sequence_callback = -1;
+      let start_time;
+      let end_time;
 
       function startSequence() {
+        start_time = Date.now();
         runFlicker();
-        sequence_callback = setInterval(runFlicker, 5000);
+        sequence_callback = setInterval(runFlicker, 1000);
       }
 
       function runFlicker() {
+        end_time = Date.now();
         flicker.stopFlicker();
 
         sequence_output.innerHTML = (sequence_index + 1) + ' / ' + sequence.length;
@@ -57,7 +62,7 @@
         if (sequence_index >= sequence.length) {
           clearInterval(sequence_callback);
           sequence_index = 0;
-          sequence_output.innerHTML = '';
+          sequence_output.innerHTML = 'Time taken:' + (end_time - start_time);
         } else {
           flicker.startFlicker(sequence[sequence_index]);
           sequence_index++;
@@ -72,6 +77,10 @@
       function startHighFrequency() {
         flicker.stopFlicker();
         flicker.startFlicker(30);
+      }
+
+      function stop() {
+        flicker.stopFlicker();
       }
 
       const bg = new Image();
