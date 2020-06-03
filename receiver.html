@@ -21,7 +21,10 @@
       <section class="container">
         <video id="camera" style="display: none;" autoplay playsinline></video>
         <button id="start-camera">Start camera</button>
-        <p id="output">Output</p>
+        <p id="output"></p>
+        <label for="recording"> Recording:</label>
+        <input type="checkbox" id="recording"><br>
+        <button id="clear-button" onclick="clearRecording();">Clear</button>
         <canvas id="camera-canvas"></canvas>
         <canvas id="fft-canvas"></canvas>
       </section>
@@ -81,6 +84,9 @@
       const fft_high_bin = 10;
       let fft_threshold = 0;
 
+      // recording controls
+      const recording = document.getElementById('recording');
+
       function drawFrame() {
         if (camera_canvas.width != video.videoWidth) {
           camera_canvas.width = video.videoWidth;
@@ -105,8 +111,10 @@
           drawLine(fft_ctx, 0, fft_threshold * fft_v_scale,
             fft_mag.length*8, fft_threshold * fft_v_scale);
 
-          output.innerHTML = getFFTPeak(fft_mag,
-            fft_low_bin, fft_high_bin);
+          if (recording.checked) {
+            output.innerHTML += getFFTPeak(fft_mag,
+              fft_low_bin, fft_high_bin) + ' ';
+          }
 
           // slide window
           for (let i = fft_size/2-1; i >= 0; i--) {
@@ -177,6 +185,10 @@
         }
 
         return 0;
+      }
+
+      function clearRecording() {
+        output.innerHTML = '';
       }
     </script>
   </body>
